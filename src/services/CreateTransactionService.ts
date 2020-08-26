@@ -1,15 +1,26 @@
 import TransactionsRepository from '../repositories/TransactionsRepository';
 import Transaction from '../models/Transaction';
 
-class CreateTransactionService {
-  private transactionsRepository: TransactionsRepository;
+interface CreateTransaction {
+  title: string;
 
-  constructor(transactionsRepository: TransactionsRepository) {
+  value: number;
+
+  type: 'income' | 'outcome';
+}
+
+class CreateTransactionService {
+  constructor(private transactionsRepository: TransactionsRepository) {
     this.transactionsRepository = transactionsRepository;
   }
 
-  public execute(): Transaction {
-    // TODO
+  public execute({ title, value, type }: CreateTransaction): Transaction {
+    const balance = this.transactionsRepository.getBalance();
+
+    if (type === 'outcome' && value >= balance.total) {
+      throw Error(`Outcome transactions bigger or equal total balance`);
+    }
+    return this.transactionsRepository.create(title, value, type);
   }
 }
 
